@@ -45,7 +45,8 @@ filetype plugin indent on  " required
 " see :h vundle for more details or wiki for FAQ
 " Put your non-Plugin stuff after this line
 
-au BufRead,BufNewFile *.scss set filetype=sass
+set encoding=utf-8
+scriptencoding utf-8
 
 language en_US.UTF-8
 
@@ -67,6 +68,11 @@ set exrc
 
 syntax on
 highlight Comment ctermfg=blue guifg=blue
+
+au BufRead,BufNewFile *.scss set filetype=sass
+
+" Map double <Esc> to toggle hlsearch
+nnoremap <silent><Esc><Esc> :<C-u>set nohlsearch!<CR>
 
 source ~/vimscript/toggle_tab_win.vim
 

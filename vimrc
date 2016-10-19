@@ -48,14 +48,23 @@ filetype plugin indent on  " required
 set encoding=utf-8
 scriptencoding utf-8
 
+set fileencoding=utf-8
+set fileencodings=utf-8,euc-jp,cp932,ucs-boms
+set fileformats=unix,dos,mac
+
+set ambiwidth=double
+
 language en_US.UTF-8
+
+set expandtab
+set tabstop=4
+set softtabstop=4
+set autoindent
+set smartindent
+set shiftwidth=4
 
 set nowrapscan
 set hlsearch
-
-set autoindent
-set tabstop=4
-set shiftwidth=4
 
 set laststatus=2
 set showcmd

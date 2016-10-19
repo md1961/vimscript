@@ -72,6 +72,10 @@ set showcmd
 set cindent
 set backspace=indent,eol,start
 
+source $VIMRUNTIME/macros/matchit.vim
+
+set wildmenu
+
 " Search .vimrc and so on in the current directory
 set exrc
 

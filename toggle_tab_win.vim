@@ -44,7 +44,12 @@
 
   :if s:is_single_tab
     :if len(s:files) <= 1
-      :echo "Nothing to do because a single file is opened"
+      :let s:alt_file = @#
+      :if s:alt_file == ''
+        :echo "Nothing to do because a single file is opened"
+      :else
+        :execute "sp " . s:alt_file
+      :endif
     :else
       :only
       :call s:ApplyExceptCurrent(s:files, s:index_current_file, ":tabedit")

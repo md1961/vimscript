@@ -30,11 +30,10 @@
 
 
 :function s:ToggleTabWin()
-  :redir => s:var
+  :redir => s:tabs
     :silent tabs
   :redir END
-
-  :let s:lines = split(s:var, "\n")
+  :let s:lines = split(s:tabs, "\n")
   :let s:tab_page_indexes = filter(copy(s:lines), 'match(v:val, "Tab page ") >= 0')
   :let s:is_single_tab = len(s:tab_page_indexes) == 1
   :let s:files = filter(copy(s:lines), 'match(v:val, "^[> ]") >= 0')
@@ -45,10 +44,24 @@
   :if s:is_single_tab
     :if len(s:files) <= 1
       :let s:alt_file = @#
-      :if s:alt_file == ''
-        :echo "Nothing to do because a single file is opened"
-      :else
+      :if s:alt_file > ''
         :execute "sp " . s:alt_file
+      :else
+        :redir => s:args
+          :silent args
+        :redir END
+        :let s:args = substitute(s:args, "\n", "", "g")
+        :let s:files = split(s:args, ' ')
+        :if len(s:files) == 1
+          :echo "Nothing to do because a single file is opened"
+        :else
+          :let s:first_chars_in_files = map(copy(s:files), 'strpart(v:val, 0, 1)')
+          :let s:index_next_file = index(s:first_chars_in_files, '[') + 1
+          :if s:index_next_file >= len(s:files)
+            :let s:index_next_file = 0
+          :endif
+          :execute "sp " . s:files[s:index_next_file]
+        :endif
       :endif
     :else
       :only

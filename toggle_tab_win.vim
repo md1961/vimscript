@@ -14,7 +14,7 @@
 :set cpo&vim
 
 
-:function s:ApplyExceptCurrent(items, index_current, command)
+:function s:ApplyExceptCurrent(command, items, index_current)
   :let s:i = a:index_current + 1
   :while 1
     :if s:i == a:index_current
@@ -29,23 +29,30 @@
 :endfunction
 
 
+" tabs : ['Tab page 1', '    vimrc', '    vimrc_ruby', 'Tab page 2', '   usr_41.txt', 'Tab page 3', '> + toggle_tab_win.vim']
+" args : 'vimrc_ruby usr_41.txt [toggle_tab_win.vim]'
+" @#   : alternate file
 :function s:ToggleTabWin()
   :redir => s:tabs
     :silent tabs
   :redir END
   :let s:lines = split(s:tabs, "\n")
-  :let s:tab_page_indexes = filter(copy(s:lines), 'match(v:val, "Tab page ") >= 0')
-  :let s:is_single_tab = len(s:tab_page_indexes) == 1
+  :let s:tab_page_labels = filter(copy(s:lines), 'match(v:val, "Tab page ") >= 0')
+  :let s:is_single_tab = len(s:tab_page_labels) == 1
   :let s:files = filter(copy(s:lines), 'match(v:val, "^[> ]") >= 0')
   :let s:first_chars_in_files = map(copy(s:files), 'strpart(v:val, 0, 1)')
-  :let s:index_current_file = index(s:first_chars_in_files, '>')
+  :let s:index_current_file = index(s:first_chars_in_files, ">")
   :call map(s:files, 'substitute(v:val, "^>*  *", "", "")')
 
   :if s:is_single_tab
-    :if len(s:files) <= 1
+    :if len(s:files) > 1
+      :only
+      :call s:ApplyExceptCurrent(':tabedit', s:files, s:index_current_file)
+      :tabnext
+    :else
       :let s:alt_file = @#
       :if s:alt_file > ''
-        :execute "sp " . s:alt_file
+        :execute 'split ' . s:alt_file
       :else
         :redir => s:args
           :silent args
@@ -56,24 +63,20 @@
           :echo "Nothing to do because a single file is opened"
         :else
           :let s:first_chars_in_files = map(copy(s:files), 'strpart(v:val, 0, 1)')
-          :let s:index_next_file = index(s:first_chars_in_files, '[') + 1
+          :let s:index_next_file = index(s:first_chars_in_files, "[") + 1
           :if s:index_next_file >= len(s:files)
             :let s:index_next_file = 0
           :endif
-          :execute "sp " . s:files[s:index_next_file]
+          :execute 'split ' . s:files[s:index_next_file]
         :endif
       :endif
-    :else
-      :only
-      :call s:ApplyExceptCurrent(s:files, s:index_current_file, ":tabedit")
-      :tabnext
     :endif
   :else
     :if len(s:lines) != len(s:files) * 2
       :echo "Quit execution because there is another tab with multiple windows"
     :else
       :tabonly
-      :call s:ApplyExceptCurrent(s:files, s:index_current_file, ":split")
+      :call s:ApplyExceptCurrent(':split', s:files, s:index_current_file)
       :wincmd w
     :endif
   :endif

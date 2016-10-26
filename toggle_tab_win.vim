@@ -14,21 +14,6 @@
 :set cpo&vim
 
 
-:function s:ApplyExceptCurrent(command, items, index_current)
-  :let s:i = a:index_current + 1
-  :while 1
-    :if s:i == a:index_current
-      :break
-    :elseif s:i >= len(a:items)
-      :let s:i = 0
-    :else
-      :execute a:command . " " . a:items[s:i]
-      :let s:i += 1
-    :endif
-  :endwhile
-:endfunction
-
-
 " tabs : ['Tab page 1', '    vimrc', '    vimrc_ruby', 'Tab page 2', '   usr_41.txt', 'Tab page 3', '> + toggle_tab_win.vim']
 " args : 'vimrc_ruby usr_41.txt [toggle_tab_win.vim]'
 " @#   : alternate file
@@ -37,48 +22,65 @@
     :silent tabs
   :redir END
   :let s:lines = split(s:tabs, "\n")
-  :let s:tab_page_labels = filter(copy(s:lines), 'match(v:val, "Tab page ") >= 0')
-  :let s:is_single_tab = len(s:tab_page_labels) == 1
-  :let s:files = filter(copy(s:lines), 'match(v:val, "^[> ]") >= 0')
-  :let s:first_chars_in_files = map(copy(s:files), 'strpart(v:val, 0, 1)')
-  :let s:index_current_file = index(s:first_chars_in_files, ">")
-  :call map(s:files, 'substitute(v:val, "^>*  *", "", "")')
 
-  :if s:is_single_tab
-    :if len(s:files) > 1
-      :only
-      :call s:ApplyExceptCurrent(':tabedit', s:files, s:index_current_file)
-      :tabnext
+  :let s:files_by_tab = []
+  :let s:index_current_tab = -1
+  :for s:line in s:lines
+    :if match(s:line, "^Tab page ") >= 0
+      :if exists("s:files_in_tab") && len(s:files_in_tab) > 0
+        :call add(s:files_by_tab, s:files_in_tab)
+      :endif
+      :let s:files_in_tab = []
     :else
-      :let s:alt_file = @#
-      :if s:alt_file > ''
-        :execute 'split ' . s:alt_file
-      :else
-        :redir => s:args
-          :silent args
-        :redir END
-        :let s:args = substitute(s:args, "\n", "", "g")
-        :let s:files = split(s:args, ' ')
-        :if len(s:files) == 1
-          :echo "Nothing to do because a single file is opened"
-        :else
-          :let s:first_chars_in_files = map(copy(s:files), 'strpart(v:val, 0, 1)')
-          :let s:index_next_file = index(s:first_chars_in_files, "[") + 1
-          :if s:index_next_file >= len(s:files)
-            :let s:index_next_file = 0
-          :endif
-          :execute 'split ' . s:files[s:index_next_file]
-        :endif
+      :call add(s:files_in_tab, s:line)
+      :if match(s:line, "^>") >= 0
+        :let s:index_current_tab = len(s:files_by_tab)
       :endif
     :endif
-  :else
-    :if len(s:lines) != len(s:files) * 2
-      :echo "Quit execution because there is another tab with multiple windows"
+  :endfor
+  :call add(s:files_by_tab, s:files_in_tab)
+  " Must reset variable because it keeps existing for next script execution.
+  :let s:files_in_tab = []
+
+  :let s:is_single_file_opened = len(s:files_by_tab) == 1 && len(s:files_by_tab[0]) == 1
+  :let s:num_files_in_current_tab = len(s:files_by_tab[s:index_current_tab])
+  :if s:is_single_file_opened
+    :let s:alt_file = @#
+    :if s:alt_file > ''
+      :execute 'split ' . s:alt_file
     :else
-      :tabonly
-      :call s:ApplyExceptCurrent(':split', s:files, s:index_current_file)
-      :wincmd w
+      :redir => s:args
+        :silent args
+      :redir END
+      :let s:args = substitute(s:args, "\n", "", "g")
+      :let s:files = split(s:args, ' ')
+      :if len(s:files) == 1
+        :echo "Nothing to do because a single file exists to edit"
+      :else
+        :let s:first_chars_in_files = map(copy(s:files), 'strpart(v:val, 0, 1)')
+        :let s:index_next_file = index(s:first_chars_in_files, "[") + 1
+        :if s:index_next_file >= len(s:files)
+          :let s:index_next_file = 0
+        :endif
+        :execute 'split ' . s:files[s:index_next_file]
+        "TODO: What about rest of files when num files >= 3
+      :endif
     :endif
+  :elseif s:num_files_in_current_tab == 1
+    :tabnext
+    " Go to bottom window.
+    :wincmd b
+    :let s:file_to_open = @%
+    :close
+    :tabprevious
+    :execute 'split ' . s:file_to_open
+    :wincmd w
+  :else
+    :wincmd W
+    :let s:file_to_open = @%
+    :close
+    :execute 'tabedit ' . s:file_to_open
+    :tabprevious
   :endif
 :endfunction
 

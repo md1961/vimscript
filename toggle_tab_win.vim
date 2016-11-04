@@ -67,12 +67,19 @@
       :endif
     :endif
   :elseif s:num_files_in_current_tab == 1
+    :let s:index_next_tab = s:index_current_tab + 1
+    :if s:index_next_tab >= len(s:files_by_tab)
+      :let s:index_next_tab = 0
+    :endif
+    :let s:files_in_next_tab = s:files_by_tab[s:index_next_tab]
     :tabnext
     " Go to bottom window.
     :wincmd b
     :let s:file_to_open = @%
     :close
-    :tabprevious
+    :if len(s:files_in_next_tab) > 1
+      :tabprevious
+    :endif
     :execute 'split ' . s:file_to_open
     :wincmd w
   :else

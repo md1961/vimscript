@@ -94,6 +94,12 @@ au BufRead,BufNewFile *.scss set filetype=sass
 " Map double <Esc> to toggle hlsearch
 nnoremap <silent><Esc><Esc> :<C-u>set nohlsearch!<CR>
 
+" vimdiffの色設定
+highlight DiffAdd    ctermfg=white ctermbg=2
+highlight DiffChange ctermfg=black ctermbg=3
+highlight DiffDelete ctermfg=black ctermbg=6
+highlight DiffText   ctermfg=black ctermbg=7
+
 source ~/vimscript/toggle_tab_win.vim
 
 "[EOF]

@@ -73,6 +73,23 @@ set shiftwidth=4
 set nowrapscan
 set hlsearch
 
+" ファイル名表示
+set statusline=%F
+" 変更チェック表示
+set statusline+=%m
+" 読み込み専用かどうか表示
+set statusline+=%r
+" ヘルプページなら[HELP]と表示
+set statusline+=%h
+" プレビューウインドウなら[Prevew]と表示
+set statusline+=%w
+" 以降は右寄せ表示
+set statusline+=%=
+" file encoding
+set statusline+=[ENC=%{&fileencoding}]
+" 現在行数/全行数
+set statusline+=[LOW=%l/%L]
+
 set laststatus=2
 set showcmd
 

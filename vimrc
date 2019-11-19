@@ -74,7 +74,7 @@ set nowrapscan
 set hlsearch
 
 " ファイル名表示
-set statusline=%F
+set statusline=%f
 " 変更チェック表示
 set statusline+=%m
 " 読み込み専用かどうか表示
